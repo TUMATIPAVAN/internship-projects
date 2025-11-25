@@ -1,35 +1,127 @@
 import nltk
-from nltk.chat.util import Chat, reflectionswhat 
-try:
-    pairs = [
-        [
-            r"(hi|hello|hey)",
-            ["Hello there.", "Hmm. Hello."]
-        ],
-        [
-            r"what is your name?",
-            ["I am a simple NLP chatbot. Not Venkateswaren, sadly."]
-        ],
-        [
-            r"how are you?",
-            ["I'm functioning. Better than most humans."]
-        ],
-        [
-            r"(.*) your purpose?",
-            ["To answer your questions. Or try, at least."]
-        ],
-        [
-            r"(.*)",
-            ["I don't know that. Try asking something simpler."]
-        ]
+import json
+import random
+import re
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
+# Download required NLTK resources
+nltk.download('punkt')
+nltk.download('punkt_tab')  # Needed for newer NLTK versions
+nltk.download('wordnet')
+nltk.download('stopwords')
+
+
+def preprocess_text(text):
+    text = text.lower()
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+    stop_words = set(stopwords.words('english'))
+
+    cleaned_tokens = [
+        lemmatizer.lemmatize(word)
+        for word in tokens
+        if word.isalpha() and word not in stop_words
     ]
+    return cleaned_tokens
 
-    def main():
-        print("Chatbot: Ready to talk. Type 'quit' to exit.")
-        bot = Chat(pairs, reflections)
-        bot.converse()
 
-    if __name__ == "__main__":
-        main()
-except KeyboardInterrupt:
-    print("\nBye")
+chatbot_data = {
+    "greeting": {
+        "keywords": ["hello", "hi", "hey", "greetings", "good morning", "good evening"],
+        "responses": [
+            "Hello there! How can I assist you today?",
+            "Hi! I'm your AI assistant. What can I do for you?",
+            "Hey! Hope you're having a great day!"
+        ]
+    },
+    "farewell": {
+        "keywords": ["bye", "goodbye", "see you", "exit"],
+        "responses": [
+            "Goodbye! Have a wonderful day!",
+            "See you soon!",
+            "Take care! It was nice chatting with you!"
+        ]
+    },
+    "about": {
+        "keywords": ["who", "you", "bot", "chatbot"],
+        "responses": [
+            "I'm a Python-based AI Chatbot developed using NLTK and NLP techniques.",
+            "I'm your CodTech AI Assistant built to demonstrate natural language understanding.",
+            "I'm a simple chatbot created to interact and assist with general queries."
+        ]
+    },
+    "python": {
+        "keywords": ["python", "language", "programming"],
+        "responses": [
+            "Python is a versatile programming language used for web, data science, and AI.",
+            "Python is known for its simplicity and readability, great for beginners!",
+            "Python powers many modern technologies, from AI to automation."
+        ]
+    },
+    "thanks": {
+        "keywords": ["thanks", "thank you", "appreciate"],
+        "responses": [
+            "You're welcome! 😊",
+            "No problem at all!",
+            "Glad I could help!"
+        ]
+    },
+    # New small-talk / casual chat intent
+    "casual_chat": {
+        # Single words so lemmatized tokens can catch them
+        "keywords": ["doing", "up", "going", "bored", "nothing"],
+        "responses": [
+            "Just chatting with you 😊",
+            "I'm here, ready to help you with anything you need!",
+            "Processing... but mostly just hanging out with you 🤖",
+            "Always here and always online. What about you?"
+        ]
+    },
+    "default": {
+        "keywords": [],
+        "responses": [
+            "I'm sorry, I didn’t quite understand that.",
+            "Could you rephrase your question?",
+            "I'm still learning. Can you try asking in another way?"
+        ]
+    }
+}
+
+
+def generate_response(user_input):
+    cleaned_input = preprocess_text(user_input)
+
+    # Loop through all intents
+    for intent, data in chatbot_data.items():
+        # Skip 'default' because it has no keywords
+        if intent == "default":
+            continue
+
+        for keyword in data["keywords"]:
+            # Tokenize the keyword so phrases like "good morning" work too
+            keyword_tokens = preprocess_text(keyword)
+
+            # If any keyword token appears in the cleaned user input, match this intent
+            if any(token in cleaned_input for token in keyword_tokens):
+                return random.choice(data["responses"])
+
+    # If nothing matched, use default responses
+    return random.choice(chatbot_data["default"]["responses"])
+
+
+def chat():
+    print("🤖 CodTech AI Chatbot: Hello! Type 'exit' to end the chat.\n")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() == 'exit':
+            print("🤖 Chatbot: Goodbye! Have a great day! 👋")
+            break
+        response = generate_response(user_input)
+        print("🤖 Chatbot:", response, "\n")
+
+
+if __name__ == "__main__":
+    chat()
+
