@@ -1,0 +1,35 @@
+import nltk
+from nltk.chat.util import Chat, reflectionswhat 
+try:
+    pairs = [
+        [
+            r"(hi|hello|hey)",
+            ["Hello there.", "Hmm. Hello."]
+        ],
+        [
+            r"what is your name?",
+            ["I am a simple NLP chatbot. Not Venkateswaren, sadly."]
+        ],
+        [
+            r"how are you?",
+            ["I'm functioning. Better than most humans."]
+        ],
+        [
+            r"(.*) your purpose?",
+            ["To answer your questions. Or try, at least."]
+        ],
+        [
+            r"(.*)",
+            ["I don't know that. Try asking something simpler."]
+        ]
+    ]
+
+    def main():
+        print("Chatbot: Ready to talk. Type 'quit' to exit.")
+        bot = Chat(pairs, reflections)
+        bot.converse()
+
+    if __name__ == "__main__":
+        main()
+except KeyboardInterrupt:
+    print("\nBye")
