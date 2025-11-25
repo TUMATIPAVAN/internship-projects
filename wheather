@@ -1,0 +1,34 @@
+import requests
+import matplotlib.pyplot as plt
+import datetime
+
+CITY = "Chennai"
+LAT = 13.0827
+LON = 80.2707
+
+def fetch_weather(lat, lon):
+    url = (
+        f"https://api.open-meteo.com/v1/forecast?"
+        f"latitude={lat}&longitude={lon}&hourly=temperature_2m"
+    )
+    response = requests.get(url)
+    return response.json()
+
+def parse_weather(data):
+    times = [datetime.datetime.fromisoformat(t) for t in data["hourly"]["time"]]
+    temps = data["hourly"]["temperature_2m"]
+    return times, temps
+
+def plot_temperature(times, temps):
+    plt.figure(figsize=(10,5))
+    plt.plot(times, temps)
+    plt.title("Chennai Temperature Forecast (Open-Meteo)")
+    plt.xlabel("Time")
+    plt.ylabel("Temperature (°C)")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+data = fetch_weather(LAT, LON)
+times, temps = parse_weather(data)
+plot_temperature(times, temps)
